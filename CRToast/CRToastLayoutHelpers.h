@@ -6,6 +6,18 @@
 #import <Foundation/Foundation.h>
 #import "CRToast.h" // For NS_ENUM values
 
+#ifndef kScreenWidth
+#define kScreenWidth        ([[UIScreen mainScreen] bounds].size.width)
+#endif
+
+#ifndef kScreenHeight
+#define kScreenHeight       ([[UIScreen mainScreen] bounds].size.height)
+#endif
+
+#ifndef IsIPhoneX
+#define IsIPhoneX           (kScreenHeight == 812 && kScreenWidth == 375)
+#endif
+
 /**
  `BOOL` to determine if the frame is automatically adjusted for orientation. iOS 8 automatically accounts for orientation when getting frame where as iOS 7 does not.
  If/when iOS 7 support is dropped this check will no longer be necessary
@@ -56,15 +68,19 @@ static UIInterfaceOrientation CRGetDeviceOrientation() {
 #pragma mark - Status Bar Frame
 /// Get the height of the status bar for given orientation.
 static CGFloat CRGetStatusBarHeightForOrientation(UIInterfaceOrientation orientation) {
-    CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
+    if (IsIPhoneX) {
+        return 24;
+    } else {
+        CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 
-    if (CRFrameAutoAdjustedForOrientation()) {
-        return CGRectGetHeight(statusBarFrame);
+        if (CRFrameAutoAdjustedForOrientation()) {
+            return CGRectGetHeight(statusBarFrame);
+        }
+
+        return (UIInterfaceOrientationIsLandscape(orientation)) ?
+        CGRectGetWidth(statusBarFrame) :
+        CGRectGetHeight(statusBarFrame);
     }
-
-    return (UIInterfaceOrientationIsLandscape(orientation)) ?
-    CGRectGetWidth(statusBarFrame) :
-    CGRectGetHeight(statusBarFrame);
 }
 
 /// Get the width of the status bar for given orientation.
@@ -111,6 +127,7 @@ static CGFloat CRGetNotificationViewHeightForOrientation(CRToastType type, CGFlo
         case CRToastTypeStatusBar:
             return CRGetStatusBarHeightForOrientation(orientation);
         case CRToastTypeNavigationBar:
+
             return CRGetStatusBarHeightForOrientation(orientation) + CRGetNavigationBarHeightForOrientation(orientation);
         case CRToastTypeCustom:
             return preferredNotificationHeight;
@@ -205,13 +222,13 @@ static CGRect CRGetNotificationContainerFrame(UIInterfaceOrientation statusBarOr
 
 /// Get view snapshot. If `underStatusBar` it will get key windows root view controller. Otherwise it'll get the mainscreens snapshot
 static UIView *CRStatusBarSnapShotView(BOOL underStatusBar) {
-	if([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-		return underStatusBar ?
-		[[UIApplication sharedApplication].keyWindow.rootViewController.view snapshotViewAfterScreenUpdates:YES] :
-		[[UIScreen mainScreen] snapshotViewAfterScreenUpdates:YES];
-	} else {
-		return underStatusBar ?
-		[[UIApplication sharedApplication].keyWindow.rootViewController.view snapshotViewAfterScreenUpdates:NO] :
-		[[UIScreen mainScreen] snapshotViewAfterScreenUpdates:NO];
-	}
+    if([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
+        return underStatusBar ?
+        [[UIApplication sharedApplication].keyWindow.rootViewController.view snapshotViewAfterScreenUpdates:YES] :
+        [[UIScreen mainScreen] snapshotViewAfterScreenUpdates:YES];
+    } else {
+        return underStatusBar ?
+        [[UIApplication sharedApplication].keyWindow.rootViewController.view snapshotViewAfterScreenUpdates:NO] :
+        [[UIScreen mainScreen] snapshotViewAfterScreenUpdates:NO];
+    }
 }
