@@ -69,7 +69,7 @@ static UIInterfaceOrientation CRGetDeviceOrientation() {
 /// Get the height of the status bar for given orientation.
 static CGFloat CRGetStatusBarHeightForOrientation(UIInterfaceOrientation orientation) {
     if (IsIPhoneX) {
-        return 24;
+        return 44;
     } else {
         CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 
